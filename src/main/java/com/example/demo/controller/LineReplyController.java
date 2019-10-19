@@ -24,10 +24,10 @@ public class LineReplyController {
             String text = event.getMessage().getText();
             System.out.println("id: " + id);
             System.out.println("text: " + text);
-            return new TextMessage(id + "\n" + text);
+            return new TextMessage("OK!");
         } catch (Exception e) {
             // エラーは握りつぶす
-            return new TextMessage(e.toString());
+            return new TextMessage("OK!");
         }
     }
 }
