@@ -81,7 +81,7 @@ public class TestController {
                     //                    .pushMessage(new
                     .pushMessage(
                             new PushMessage(
-                                    "U82279cb01a0eb054b4402341423f7678",
+                                    "C71c4154140fbf5a629d2f3eced527937",
                                     new TemplateMessage("ランチに行きましょう!",
                                             new ButtonsTemplate(
                                                     imageUri,
