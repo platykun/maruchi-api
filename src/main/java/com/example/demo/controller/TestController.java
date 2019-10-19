@@ -113,7 +113,7 @@ public class TestController {
             return new TextMessage(id + "\n" + text);
         } catch (Exception e) {
             // エラーは握りつぶす
-            return null;
+            return new TextMessage(e.toString());
         }
     }
 
