@@ -4,33 +4,29 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.action.MessageAction;
-import com.linecorp.bot.model.event.MessageEvent;
-import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.TemplateMessage;
-import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
 import com.linecorp.bot.model.response.BotApiResponse;
-
-import java.net.URI;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-
-import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.net.URISyntaxException;
-import java.util.concurrent.ExecutionException;
-
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestOperations;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 public class TestController {
@@ -100,27 +96,6 @@ public class TestController {
             throw new RuntimeException(e);
         }
     }
-
-    // ユーザからの問い合わせに返信する
-    @EventMapping
-    @RequestMapping("/reply")
-    public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
-        try {
-            System.out.println("event: " + event.toString());
-            System.out.println("event: " + event.getSource());
-            System.out.println("event: " + event.getSource().getSenderId());
-
-            String id = event.getMessage().getId();
-            String text = event.getMessage().getText();
-            System.out.println("id: " + id);
-            System.out.println("text: " + text);
-            return new TextMessage(id + "\n" + text);
-        } catch (Exception e) {
-            // エラーは握りつぶす
-            return new TextMessage(e.toString());
-        }
-    }
-
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
