@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.action.MessageAction;
+import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.TemplateMessage;
+import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
 import com.linecorp.bot.model.response.BotApiResponse;
 import java.net.URI;
@@ -13,6 +16,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+
+import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +31,6 @@ import java.util.concurrent.ExecutionException;
 import org.springframework.web.client.RestOperations;
 
 @RestController
-@RequestMapping("/test")
 public class TestController {
 
     private final LineMessagingClient lineMessagingClient;
@@ -46,13 +50,8 @@ public class TestController {
         this.apiKey = apiKey;
     }
 
-  //    @RequestMapping(method= RequestMethod.GET)
-  //    public TestBean get(@RequestParam(value="name") String name) {
-  //        return new TestBean("", "hello");
-  //    }
-
     //リマインドをプッシュ
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(path = "/test", method = RequestMethod.GET)
     public void pushAlarm(
             @RequestParam(value = "shopId") String shopId,
             @RequestParam(value = "shopUrl") String shopUrl,
@@ -99,6 +98,18 @@ public class TestController {
             throw new RuntimeException(e);
         }
     }
+
+    // ユーザからの問い合わせに返信する
+    @EventMapping
+    @RequestMapping("/reply")
+    public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
+        String id = event.getMessage().getId();
+        String text = event.getMessage().getText();
+        System.out.println("id: " + id);
+        System.out.println("text: " + text);
+        return new TextMessage(id + "\n" + text);
+    }
+
 
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
