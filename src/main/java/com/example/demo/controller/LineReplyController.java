@@ -15,8 +15,10 @@ public class LineReplyController {
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
         try {
             System.out.println("event: " + event.toString());
-            System.out.println("event: " + event.getSource());
-            System.out.println("event: " + event.getSource().getSenderId());
+            System.out.println("source: " + event.getSource());
+            System.out.println("source.tostring: " + event.getSource().toString());
+            System.out.println("source.tostring: " + event.getSource().getClass().toString());
+            System.out.println("source.senderId: " + event.getSource().getSenderId());
 
             String id = event.getMessage().getId();
             String text = event.getMessage().getText();
