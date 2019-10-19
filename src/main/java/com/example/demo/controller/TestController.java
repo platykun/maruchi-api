@@ -10,6 +10,7 @@ import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
 import com.linecorp.bot.model.response.BotApiResponse;
+
 import java.net.URI;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
+
 import org.springframework.web.client.RestOperations;
 
 @RestController
@@ -36,15 +38,15 @@ public class TestController {
     private final LineMessagingClient lineMessagingClient;
     private final RestOperations restOperations;
     private static final DateTimeFormatter MEETING_TIME_FORMATTER =
-        DateTimeFormatter.ofPattern("HH:mm");
+            DateTimeFormatter.ofPattern("HH:mm");
 
     private final String G_NAVI_END_POINT = "https://api.gnavi.co.jp/RestSearchAPI/v3/";
     private final String apiKey;
 
     @Autowired
     TestController(LineMessagingClient lineMessagingClient,
-        RestTemplateBuilder restTemplateBuilder,
-        @Value("${gnavi.api.key}") String apiKey) {
+                   RestTemplateBuilder restTemplateBuilder,
+                   @Value("${gnavi.api.key}") String apiKey) {
         this.lineMessagingClient = lineMessagingClient;
         this.restOperations = restTemplateBuilder.build();
         this.apiKey = apiKey;
@@ -69,30 +71,30 @@ public class TestController {
             if (res.getStatusCode() == HttpStatus.OK) {
                 Response response = res.getBody();
                 imageUri =
-                    response.getRest().stream()
-                        .filter(r -> r.getId().equals(shopId))
-                        .map(r -> URI.create(r.getImageUrl().getShopImage1()).toString())
-                        .findFirst()
-                        .orElse(null);
+                        response.getRest().stream()
+                                .filter(r -> r.getId().equals(shopId))
+                                .map(r -> URI.create(r.getImageUrl().getShopImage1()).toString())
+                                .findFirst()
+                                .orElse(null);
             }
 
             BotApiResponse response = lineMessagingClient
-                // shimoe
-                //                    .pushMessage(new
-                // PushMessage("U53d1f385dce83150c8fe8b7659d65189",
-                //                    .pushMessage(new
-                .pushMessage(
-                    new PushMessage(
-                        "U82279cb01a0eb054b4402341423f7678",
-                        new TemplateMessage("ランチに行きましょう!",
-                            new ButtonsTemplate(
-                                imageUri,
-                                shopName,
-                                String.format("Let's go to lunch！\n %s に 1 階ロビー集合！", meetingTime),
-                                Arrays.asList(
-                                    new MessageAction("Agree!", "Agree!"),
-                                    new MessageAction("Not now.", "Not now."))))))
-                .get();
+                    // shimoe
+                    //                    .pushMessage(new
+                    // PushMessage("U53d1f385dce83150c8fe8b7659d65189",
+                    //                    .pushMessage(new
+                    .pushMessage(
+                            new PushMessage(
+                                    "U82279cb01a0eb054b4402341423f7678",
+                                    new TemplateMessage("ランチに行きましょう!",
+                                            new ButtonsTemplate(
+                                                    imageUri,
+                                                    shopName,
+                                                    String.format("Let's go to lunch！\n %s に 1 階ロビー集合！", meetingTime),
+                                                    Arrays.asList(
+                                                            new MessageAction("Agree!", "Agree!"),
+                                                            new MessageAction("Not now.", "Not now."))))))
+                    .get();
             System.out.println("Sent messages: {}" + response.toString());
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
@@ -103,11 +105,16 @@ public class TestController {
     @EventMapping
     @RequestMapping("/reply")
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
-        String id = event.getMessage().getId();
-        String text = event.getMessage().getText();
-        System.out.println("id: " + id);
-        System.out.println("text: " + text);
-        return new TextMessage(id + "\n" + text);
+        try {
+            String id = event.getMessage().getId();
+            String text = event.getMessage().getText();
+            System.out.println("id: " + id);
+            System.out.println("text: " + text);
+            return new TextMessage(id + "\n" + text);
+        } catch (Exception e) {
+            // エラーは握りつぶす
+            return null;
+        }
     }
 
 
