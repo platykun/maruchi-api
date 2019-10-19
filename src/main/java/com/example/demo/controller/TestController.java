@@ -106,6 +106,10 @@ public class TestController {
     @RequestMapping("/reply")
     public TextMessage handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
         try {
+            System.out.println("event: " + event.toString());
+            System.out.println("event: " + event.getSource());
+            System.out.println("event: " + event.getSource().getSenderId());
+
             String id = event.getMessage().getId();
             String text = event.getMessage().getText();
             System.out.println("id: " + id);
