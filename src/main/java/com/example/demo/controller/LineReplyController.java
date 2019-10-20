@@ -44,9 +44,9 @@ public class LineReplyController {
             if (context.getSource() instanceof GroupSource) {
                 GroupSource source = (GroupSource) context.getSource();
                 if("Agree!".equals(context.getMessage().getText())) {
-                    return new TextMessage("OK!");
+                    return new TextMessage("");
                 } else if("Not now.".equals(context.getMessage().getText())) {
-                    return new TextMessage("😢");
+                    return new TextMessage("");
                 } else {
                     Auth kintoneAuth = new Auth();
                     kintoneAuth.setApiToken(apiToken);
