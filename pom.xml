@@ -23,6 +23,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.cybozu.kintone</groupId>
+			<artifactId>kintone-sdk</artifactId>
+			<version>0.2.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
