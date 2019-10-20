@@ -99,6 +99,7 @@ public class TestController {
             List<String> groupIds =
                 records.getRecords().stream()
                     .map(m -> m.get("groupId").getValue().toString())
+                    .distinct()
                     .collect(Collectors.toList());
 
             groupIds.stream().forEach(groupId -> {
