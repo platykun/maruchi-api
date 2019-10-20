@@ -1,5 +1,10 @@
 package com.example.demo.controller;
 
+import com.cybozu.kintone.client.authentication.Auth;
+import com.cybozu.kintone.client.connection.Connection;
+import com.cybozu.kintone.client.exception.KintoneAPIException;
+import com.cybozu.kintone.client.model.record.GetRecordsResponse;
+import com.cybozu.kintone.client.module.record.Record;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.model.PushMessage;
@@ -7,6 +12,7 @@ import com.linecorp.bot.model.action.MessageAction;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
 import com.linecorp.bot.model.response.BotApiResponse;
+import java.util.stream.Collectors;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,14 +44,21 @@ public class TestController {
 
     private final String G_NAVI_END_POINT = "https://api.gnavi.co.jp/RestSearchAPI/v3/";
     private final String apiKey;
+    private final String apiToken;
+    private final String kintoneDomain;
+    private static final Integer APP_ID = 4;
 
     @Autowired
     TestController(LineMessagingClient lineMessagingClient,
                    RestTemplateBuilder restTemplateBuilder,
-                   @Value("${gnavi.api.key}") String apiKey) {
+                   @Value("${gnavi.api.key}") String apiKey,
+                   @Value("${kintone.api.token}") String apiToken,
+                   @Value("${kintone.domain}") String kintoneDomain) {
         this.lineMessagingClient = lineMessagingClient;
         this.restOperations = restTemplateBuilder.build();
         this.apiKey = apiKey;
+        this.apiToken = apiToken;
+        this.kintoneDomain = kintoneDomain;
     }
 
     //リマインドをプッシュ
@@ -63,7 +76,7 @@ public class TestController {
 
             URI uri = URI.create(G_NAVI_END_POINT + "?keyid=" + apiKey + "&id=" + shopId);
             ResponseEntity<Response> res = restOperations.getForEntity(uri, Response.class);
-            String imageUri = null;
+            final String imageUri;
             if (res.getStatusCode() == HttpStatus.OK) {
                 Response response = res.getBody();
                 imageUri =
@@ -72,27 +85,44 @@ public class TestController {
                                 .map(r -> URI.create(r.getImageUrl().getShopImage1()).toString())
                                 .findFirst()
                                 .orElse(null);
+            } else {
+                imageUri = null;
             }
 
-            BotApiResponse response = lineMessagingClient
-                    // shimoe
-                    //                    .pushMessage(new
-                    // PushMessage("U53d1f385dce83150c8fe8b7659d65189",
-                    //                    .pushMessage(new
-                    .pushMessage(
+            Auth kintoneAuth = new Auth();
+            kintoneAuth.setApiToken(apiToken);
+
+            Connection kintoneConnection = new Connection(kintoneDomain, kintoneAuth);
+            Record kintoneRecord = new Record(kintoneConnection);
+
+            GetRecordsResponse records = kintoneRecord.getRecords(APP_ID, null, null, null);
+            List<String> groupIds =
+                records.getRecords().stream()
+                    .map(m -> m.get("groupId").getValue().toString())
+                    .collect(Collectors.toList());
+
+            groupIds.stream().forEach(groupId -> {
+                BotApiResponse response = null;
+                try {
+                    response = lineMessagingClient
+                        .pushMessage(
                             new PushMessage(
-                                    "C71c4154140fbf5a629d2f3eced527937",
-                                    new TemplateMessage("ランチに行きましょう!",
-                                            new ButtonsTemplate(
-                                                    imageUri,
-                                                    shopName,
-                                                    String.format("Let's go to lunch！\n %s に 1 階ロビー集合！", meetingTime),
-                                                    Arrays.asList(
-                                                            new MessageAction("Agree!", "Agree!"),
-                                                            new MessageAction("Not now.", "Not now."))))))
-                    .get();
-            System.out.println("Sent messages: {}" + response.toString());
-        } catch (InterruptedException | ExecutionException e) {
+                                groupId,
+                                new TemplateMessage("ランチに行きましょう!",
+                                    new ButtonsTemplate(
+                                        imageUri,
+                                        shopName,
+                                        String.format("Let's go to lunch！\n %s に 1 階ロビー集合！", meetingTime),
+                                        Arrays.asList(
+                                            new MessageAction("Agree!", "Agree!"),
+                                            new MessageAction("Not now.", "Not now."))))))
+                        .get();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println("Sent messages: {}" + response.toString());
+            });
+        } catch (KintoneAPIException e) {
             throw new RuntimeException(e);
         }
     }
